@@ -1,6 +1,5 @@
 {
-    "name": "MrD",
-    "symbol": "MRD",
-    "description": "First solana token by Deepak",
+    "name": "testCollection",
+    "description": "Description for the test Collection",
     "image": "https://raw.githubusercontent.com/deepakA18/solana/main/new-token/mrd.jpg"
 }
