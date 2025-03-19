@@ -1,46 +1,49 @@
-import {createEscrowAccount, createNft, fetchDigitalAsset, mplTokenMetadata} from "@metaplex-foundation/mpl-token-metadata";
-import {airdropIfRequired, getExplorerLink, getKeypairFromFile} from "@solana-developers/helpers";
-import {createUmi} from "@metaplex-foundation/umi-bundle-defaults";
+const { createEscrowAccount, createNft, fetchDigitalAsset, mplTokenMetadata } = require("@metaplex-foundation/mpl-token-metadata");
+const { airdropIfRequired, getExplorerLink, getKeypairFromFile } = require("@solana-developers/helpers");
+const { createUmi } = require("@metaplex-foundation/umi-bundle-defaults");
 
-import {Connection, LAMPORTS_PER_SOL, clusterApiUrl} from "@solana/web3.js";
-import { generateSigner, keypairIdentity, percentAmount } from "@metaplex-foundation/umi";
+const { Connection, LAMPORTS_PER_SOL, clusterApiUrl } = require("@solana/web3.js");
+const { generateSigner, keypairIdentity, percentAmount } = require("@metaplex-foundation/umi");
 
+(async () => {
+    const connection = new Connection(clusterApiUrl("devnet"));
 
-const connection =  new Connection(clusterApiUrl("devnet"));
+    const user = await getKeypairFromFile();
 
-const user = await getKeypairFromFile();
+    await airdropIfRequired(connection, user.publicKey, 1 * LAMPORTS_PER_SOL, 0.5 * LAMPORTS_PER_SOL);
 
-await airdropIfRequired(connection, user.publicKey, 1 * LAMPORTS_PER_SOL, 0.5 * LAMPORTS_PER_SOL);
+    console.log("Loaded user", user.publicKey.toBase58());
 
+    const umi = createUmi(connection.rpcEndpoint);
+    umi.use(mplTokenMetadata());
 
-console.log("Loaded user", user.publicKey.toBase58())
+    const umiUser = umi.eddsa.createKeypairFromSecretKey(user.secretKey);
+    umi.use(keypairIdentity(umiUser));
 
-const umi = createUmi(connection.rpcEndpoint);
-umi.use(mplTokenMetadata());
+    console.log("Set up Umi instance for user!");
 
-const umiUser = umi.eddsa.createKeypairFromSecretKey(user.secretKey);
-umi.use(keypairIdentity(umiUser))
+    const collectionMint = generateSigner(umi);
 
-console.log("Set up Umi instance for user!");
+    const txn = createNft(umi, {
+        mint: collectionMint,
+        name: "W Collection",
+        symbol: "WC",
+        uri: "",
+        sellerFeeBasisPoints: percentAmount(0),
+        isCollection: true
+    });
 
-const collectionMint = generateSigner(umi);
+    await txn.sendAndConfirm(umi);
 
-const txn =  createNft(umi, {
-mint: collectionMint,
-name: "W Collection",
-symbol: "WC",
-uri: "",
-sellerFeeBasisPoints: percentAmount(0),
-isCollection: true
-});
+    const createdCollectionNFT = await fetchDigitalAsset(umi, collectionMint.publicKey);
 
-await txn.sendAndConfirm(umi);
+    console.log(`Created collection 📦! Address is ${getExplorerLink(
+        "address",
+        createdCollectionNFT.mint.publicKey,
+        "devnet"
+    )}`);
+})();
 
-const createdCollectionNFT = await fetchDigitalAsset(umi,collectionMint.publicKey);
-
-console.log(`Created collection 📦! Address is ${getExplorerLink(
-    "address",
-    createdCollectionNFT.mint.publicKey,
-    "devnet"
-)}` );
-
+//Loaded user 9Eis2fKZpAcZyVSbDdnuBZJ2f74SkSjAC7dx1GsAhNwz
+//Set up Umi instance for user!
+//Created collection 📦! Address is https://explorer.solana.com/address/xWizogTV7yPSxVqps4vdGbVbP7RNvQ4adfKKwc2ipfk?cluster=devnet
