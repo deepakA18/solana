@@ -1,10 +1,8 @@
-import { createEscrowAccount, createNft, fetchDigitalAsset, mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
-import { airdropIfRequired, getExplorerLink, getKeypairFromFile } from "@solana-developers/helpers";
-import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-
-import { Connection, LAMPORTS_PER_SOL, clusterApiUrl } from "@solana/web3.js";
-import { generateSigner, keypairIdentity, percentAmount, publicKey} from "@metaplex-foundation/umi";
-
+const { createNft, fetchDigitalAsset, mplTokenMetadata } = require("@metaplex-foundation/mpl-token-metadata");
+const { airdropIfRequired, getExplorerLink, getKeypairFromFile } = require("@solana-developers/helpers");
+const { createUmi } = require("@metaplex-foundation/umi-bundle-defaults");
+const { Connection, LAMPORTS_PER_SOL, clusterApiUrl } = require("@solana/web3.js");
+const { generateSigner, keypairIdentity, percentAmount, publicKey } = require("@metaplex-foundation/umi");
 
 (async () => {
     const connection = new Connection(clusterApiUrl("devnet"));
@@ -23,7 +21,7 @@ import { generateSigner, keypairIdentity, percentAmount, publicKey} from "@metap
 
     console.log("Set up Umi instance for user!");
 
-    const collectionAddress =  publicKey("xWizogTV7yPSxVqps4vdGbVbP7RNvQ4adfKKwc2ipfk");
+    const collectionAddress = publicKey("xWizogTV7yPSxVqps4vdGbVbP7RNvQ4adfKKwc2ipfk");
 
     console.log("Creating NFT...");
 
@@ -33,7 +31,7 @@ import { generateSigner, keypairIdentity, percentAmount, publicKey} from "@metap
         {
             mint,
             name: "W NFT1",
-            uri: "",
+            uri: "https://raw.githubusercontent.com/deepakA18/solana/main/new-nft/nft.json",
             sellerFeeBasisPoints: percentAmount(0),
             collection: {
                 key: collectionAddress,
@@ -41,10 +39,9 @@ import { generateSigner, keypairIdentity, percentAmount, publicKey} from "@metap
             }
         });
 
-        await transaction.sendAndConfirm(umi);
+    await transaction.sendAndConfirm(umi);
 
-        const createdNft = await fetchDigitalAsset(umi, mint.publicKey);
+    const createdNft = await fetchDigitalAsset(umi, mint.publicKey);
 
-        console.log(`Created NFT! Address is ${getExplorerLink("address", createdNft.mint.publicKey, "devnet")}`);
-}
-)();
+    console.log(`Created NFT! Address is ${getExplorerLink("address", createdNft.mint.publicKey, "devnet")}`);
+})();
